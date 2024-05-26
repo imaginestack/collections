@@ -1,0 +1,61 @@
+---
+- name: Pre tasks
+  hosts: all
+  pre_tasks:
+    - name: Verify Ansible is version 2.11 or above. (If this fails you may need to update Ansible)
+      assert:
+        that: "ansible_version.full is version_compare('2.11', '>=')"
+        msg: >
+          "Ansible is out of date. See here for more info: https://docs.technotim.live/posts/ansible-automation/"
+
+- name: Setup RKE2 servers
+  hosts: masters
+  roles:
+    - role: install_rke2
+      become: true
+
+- name: Deploy kube-vip
+  hosts: master1
+  roles:
+    - role: deploy_kube_vip
+      become: true
+
+- name: Deploy MetalLB
+  hosts: master1
+  roles:
+    - role: deploy_metallb
+      become: true
+
+- name: Deploy Cilium
+  hosts: master1
+  roles:
+    - role: deploy_cilium
+      become: true
+
+- name: Verify RKE2 Cluster
+  hosts: all
+  tasks:
+    - name: Check if all nodes are Ready
+      shell: kubectl get nodes
+      register: result
+    - name: Print node status
+      debug:
+        msg: "{{ result.stdout }}"
+    - name: Check if kube-vip is running
+      shell: kubectl get pods -n kube-system | grep kube-vip
+      register: kube_vip_result
+    - name: Print kube-vip status
+      debug:
+        msg: "{{ kube_vip_result.stdout }}"
+    - name: Check if MetalLB is running
+      shell: kubectl get pods -n metallb-system
+      register: metallb_result
+    - name: Print MetalLB status
+      debug:
+        msg: "{{ metallb_result.stdout }}"
+    - name: Check if Cilium is running
+      shell: kubectl get pods -n kube-system | grep cilium
+      register: cilium_result
+    - name: Print Cilium status
+      debug:
+        msg: "{{ cilium_result.stdout }}"
