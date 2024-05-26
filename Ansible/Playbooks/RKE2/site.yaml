@@ -13,14 +13,14 @@
 
 # bootstraps first server and copies configs for others/agents
 - name: Prepare all nodes
-  hosts: servers,agents
+  hosts: servers
   gather_facts: true # enables us to gather lots of useful variables: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/setup_module.html
   roles:
     - prepare-nodes
 
 # creates directories for download and then downloads RKE2 and changes permissions
 - name: Download RKE2
-  hosts: servers,agents
+  hosts: servers
   gather_facts: true
   roles:
     - rke2-download
@@ -34,7 +34,7 @@
 
 # bootstraps the first server, copies configs to nodes, saves token to use later
 - name: Prepare RKE2 on Servers and Agents
-  hosts: servers,agents
+  hosts: servers
   gather_facts: true
   roles:
     - rke2-prepare
@@ -45,13 +45,6 @@
   gather_facts: true
   roles:
     - add-server
-
-# Adds agents to the cluster
-- name: Add additional RKE2 Agents
-  hosts: agents
-  gather_facts: true
-  roles:
-    - add-agent
 
 # Finish kube-vip, add metallb
 - name: Apply manifests after cluster is created
