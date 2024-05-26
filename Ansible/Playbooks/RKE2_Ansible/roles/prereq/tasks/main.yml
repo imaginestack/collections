@@ -38,13 +38,11 @@
     content: "br_netfilter"
     dest: /etc/modules-load.d/br_netfilter.conf
     mode: "u=rw,g=,o="
-  when: ansible_os_family == "RedHat"
 
 - name: Load br_netfilter
   community.general.modprobe:
     name: br_netfilter
     state: present
-  when: ansible_os_family == "RedHat"
 
 - name: Set bridge-nf-call-iptables (just to be sure)
   ansible.posix.sysctl:
@@ -52,7 +50,6 @@
     value: "1"
     state: present
     reload: true
-  when: ansible_os_family == "RedHat"
   loop:
     - net.bridge.bridge-nf-call-iptables
     - net.bridge.bridge-nf-call-ip6tables
@@ -66,4 +63,4 @@
     insertafter: EOF
     path: /etc/sudoers
     validate: 'visudo -cf %s'
-  when: ansible_os_family in [ "RedHat", "Suse" ]
+  when: ansible_os_family in [ "RedHat", "Suse", "Debian" ]

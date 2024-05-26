@@ -14,11 +14,11 @@ platforms:
       ssh.username: "vagrant"
       ssh.password: "vagrant"
     groups:
-      - k3s_cluster
+      - rke2_cluster
       - master
     interfaces:
       - network_name: private_network
-        ip: 192.168.30.62
+        ip: 192.168.10.111
 provisioner:
   name: ansible
   env:
