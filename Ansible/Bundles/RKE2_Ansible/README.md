@@ -1,151 +1,165 @@
-# Ansible RKE2 HA Cluster with Kube-VIP and MetalLB
+# RKE2 HA Stack
+
+## Ansible Playbooks for High Availability Kubernetes with RKE2
+
+This repository provides Ansible playbooks to automate the deployment of a highly available (HA) Kubernetes cluster using RKE2 (Rancher Kubernetes Engine 2). The stack integrates essential components for a production-ready environment, including:
+
+-   **Load Balancing:** High availability with either MetalLB or kube-vip.
+-   **Service Discovery:** Ensures consistent service access within the cluster.
+-   **Certificate Management:** Automates SSL/TLS certificate issuance for secure communication.
+
+## Features
+
+-   **RKE2 Deployment:** Automated installation and configuration of an HA RKE2 cluster.
+-   **kube-vip (Optional):** Provides a virtual IP address for the Kubernetes API server.
+-   **MetalLB:** Adds load balancing functionality for external traffic.
+-   **Cilium (Optional):** Offers advanced networking, observability, and security.
+-   **Traefik (Optional):** Acts as an ingress controller for managing external access to services.
+-   **Cert-Manager:** Automates certificate management and issuance for your cluster.
+
+## Components
+
+-   **RKE2:** A lightweight Kubernetes distribution by Rancher.
+-   **kube-vip (Optional):** A virtual IP solution for high availability of the control plane.
+-   **MetalLB:** A network load balancer implementation for Kubernetes using standard routing protocols.
+-   **Cilium (Optional):** Provides networking, observability, and security using eBPF technology.
+-   **Traefik (Optional):** A dynamic edge router for managing ingress traffic.
+-   **Cert-Manager:** A native Kubernetes certificate management controller.
+
+## System Requirements
+
+-   **Control Node:** The machine running Ansible commands must have Ansible 2.11 or later installed.
+-   **Ansible Collections:** Install required collections using:
+
+```
+ansible-galaxy collection install -r ./collections/requirements.yml
+```
+
+-   **`netaddr` Package:** Ensure it's available to Ansible (usually included with apt installations). If using pip for Ansible, install `netaddr` in the virtual environment:
 
 
-This playbook will build an HA Kubernetes cluster with `rke2`, `kube-vip` and MetalLB via `ansible`.
+```
+pip install netaddr
+```
+
+-   **Passwordless SSH:** Set up passwordless SSH access between the control node and server/agent nodes. Alternatively, provide credentials using `--ask-pass --ask-become-pass` when running Ansible commands.
+
+## Getting Started
+
+### Preparation
+
+1.  **Create a new directory:**
 
 
-If you want more context on how this works, see:
-
-📄 [Documentation](https://technotim.live/posts/k3s-etcd-ansible/) (including example commands)
-
-
-## 📖 k3s Ansible Playbook
-
-Build a Kubernetes cluster using Ansible with k3s. The goal is easily install a HA Kubernetes cluster on machines running:
-
-- [x] Debian (tested on version 11)
-- [x] Ubuntu (tested on version 22.04)
-
-on processor architecture:
-
-- [X] x64
-- [X] arm64
-- [X] armhf
-
-## ✅ System requirements
-
-- Control Node (the machine you are running `ansible` commands) must have Ansible 2.11+ 
-
-- You will also need to install collections that this playbook uses by running `ansible-galaxy collection install -r ./collections/requirements.yml` (important❗)
-
-- [`netaddr` package](https://pypi.org/project/netaddr/) must be available to Ansible. If you have installed Ansible via apt, this is already taken care of. If you have installed Ansible via `pip`, make sure to install `netaddr` into the respective virtual environment.
-
-- `server` and `agent` nodes should have passwordless SSH access, if not you can supply arguments to provide credentials `--ask-pass --ask-become-pass` to each command.
-
-## 🚀 Getting Started
-
-### 🍴 Preparation
-
-First create a new directory based on the `sample` directory within the `inventory` directory:
-
-```bash
+```
 cp -R inventory/sample inventory/my-cluster
 ```
 
-Second, edit `inventory/my-cluster/hosts.ini` to match the system information gathered above
-
-For example:
-
-```ini
-[master]
-192.168.10.31
-192.168.10.32
-192.168.10.33
-
-
-[k3s_cluster:children]
-master
+2.  **Edit `inventory/my-cluster/hosts.ini`:** Configure your environment details (server/agent node IPs). Here's an example with HA RKE2 on three master nodes:
 
 ```
+[masters]
+master1 ansible_host=192.168.10.31
+master2 ansible_host=192.168.10.32
+master3 ansible_host=192.168.10.33
 
-If multiple hosts are in the master group, the playbook will automatically set up rke2 in [HA mode with etcd]
+[rke2_cluster:children]
+masters
+```
 
-Finally, copy `ansible.example.cfg` to `ansible.cfg` and adapt the inventory path to match the files that you just created.
+3.  **Copy and configure `ansible.cfg`:**
 
-This requires at least k3s version `1.19.1` however the version is configurable by using the `k3s_version` variable.
 
-If needed, you can also edit `inventory/my-cluster/group_vars/all.yml` to match your environment.
+```
+cp ansible.example.cfg ansible.cfg
+```
 
-### ☸️ Create Cluster
+-   Update the inventory path within `ansible.cfg` to point to your newly created directory.
 
-Start provisioning of the cluster using the following command:
+4.  **Optional:** Edit `inventory/my-cluster/group_vars/all.yml` to customize variables for your deployment.
 
-```bash
+### Create Cluster
+
+Deploy the cluster using the following command, replacing `inventory/my-cluster/hosts.ini` with your actual inventory file path:
+
+```
 ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
 ```
 
-After deployment control plane will be accessible via virtual ip-address which is defined in inventory/group_vars/all.yml as `apiserver_endpoint`
+After deployment, the control plane will be accessible via the virtual IP address defined in `inventory/group_vars/all.yml` (usually under `apiserver_endpoint`).
 
-### 🔥 Remove k3s cluster
+### Remove RKE2 Cluster
 
-```bash
+To remove the deployed RKE2 cluster, run:
+
+```
 ansible-playbook reset.yml -i inventory/my-cluster/hosts.ini
 ```
 
->You should also reboot these nodes due to the VIP not being destroyed
+**Important:** It's recommended to reboot the nodes after removing the cluster due to the VIP not being automatically destroyed.
 
-## ⚙️ Kube Config
+### Kube Config
 
-To copy your `kube config` locally so that you can access your **Kubernetes** cluster run:
+Copy your kubeconfig locally for accessing the Kubernetes cluster:
 
-```bash
-scp ubuntu@master_ip:/etc/rancher/rke2/config.yaml ~/.kube/config
 ```
-If you get file Permission denied, go into the node and temporarly run:
-```bash
-sudo chmod 777 /etc/rancher/rke2/config.yaml
-```
-Then copy with the scp command and reset the permissions back to:
-```bash
-sudo chmod 600 /etc/rancher/rke2/config.yaml
+scp ubuntu@master_ip:/etc/rancher/rke2/rke2.yaml ~/.kube/config
 ```
 
-You'll then want to modify the config to point to master IP by running:
-```bash
+**Permission Issues:**
+
+If you encounter permission errors, temporarily grant read permissions:
+
+
+
+```
+sudo chmod 777 /etc/rancher/rke2/rke2.yaml
+```
+Copy the file again and then reset the permissions:
+
+```
+sudo chmod 600 /etc/rancher/rke2/rke2.yaml
+```
+
+Modify the config to point to the master IP:
+```
 sudo nano ~/.kube/config
 ```
-Then change `server: https://127.0.0.1:6443` to match your master IP: `server: https://192.168.10.111:6443`
+Change server: https://127.0.0.1:6443 to match your master IP: server: https://192.168.10.111:6443.
 
-### 🔨 Testing your cluster
+Testing Your Cluster
 
-See the commands [here](https://technotim.live/posts/k3s-etcd-ansible/#testing-your-cluster).
+Testing the Playbook Using Molecule
 
-### Troubleshooting
+This playbook includes a Molecule-based test setup. It is run automatically in CI, but you can also run the tests locally. This might be helpful for quick feedback in a few cases. You can find more information about it here.
 
-Be sure to see [this post](https://github.com/techno-tim/k3s-ansible/discussions/20) on how to troubleshoot common problems
+Pre-commit Hooks
 
-### Testing the playbook using molecule
+This repo uses pre-commit and pre-commit-hooks to lint and fix common style and syntax errors. Be sure to install Python packages and then run pre-commit install. For more information, see pre-commit.
 
-This playbook includes a [molecule](https://molecule.rtfd.io/)-based test setup.
-It is run automatically in CI, but you can also run the tests locally.
-This might be helpful for quick feedback in a few cases.
-You can find more information about it [here](molecule/README.md).
+Ansible Galaxy
 
-### Pre-commit Hooks
-
-This repo uses `pre-commit` and `pre-commit-hooks` to lint and fix common style and syntax errors.  Be sure to install python packages and then run `pre-commit install`.  For more information, see [pre-commit](https://pre-commit.com/)
-
-## 🌌 Ansible Galaxy
-
-This collection can now be used in larger ansible projects.
+This collection can now be used in larger Ansible projects.
 
 Instructions:
 
-- create or modify a file `collections/requirements.yml` in your project
+Create or modify a file collections/requirements.yml in your project:
 
-```yml
+```
 collections:
   - name: ansible.utils
   - name: community.general
   - name: ansible.posix
   - name: kubernetes.core
-  - name: https://github.com/imaginestack/collections/rke2-ansible
+  - name: https://github.com/imaginestack/collections/rke2-ha-stack
     type: git
     version: master
 ```
 
-- install via `ansible-galaxy collection install -r ./collections/requirements.yml`
-- every role is now available via the prefix `cto.rke2_ansible.` e.g. 
+Install via 
+```
+ansible-galaxy collection install -r ./collections/requirements.yml
+```
 
-## Thanks 🤝
 
+Thanks! Special thanks to the contributors and the community for their valuable input and support.
