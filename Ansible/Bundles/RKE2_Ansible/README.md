@@ -2,7 +2,9 @@
 
 ## Ansible Playbooks for High Availability Kubernetes with RKE2
 
-This repository provides Ansible playbooks to automate the deployment of a highly available (HA) Kubernetes cluster using RKE2 (Rancher Kubernetes Engine 2). The stack integrates essential components for a production-ready environment, including:
+This repository provides Ansible playbooks to automate the deployment of a highly available (HA) Kubernetes cluster using RKE2 (Rancher Kubernetes Engine 2). The stack integrates essential components for load balancing, service discovery, and certificate management.
+
+
 
 -   **Load Balancing:** High availability with either MetalLB or kube-vip.
 -   **Service Discovery:** Ensures consistent service access within the cluster.
@@ -30,6 +32,13 @@ This repository provides Ansible playbooks to automate the deployment of a highl
 
 -   **Control Node:** The machine running Ansible commands must have Ansible 2.11 or later installed.
 -   **Ansible Collections:** Install required collections using:
+
+### Clone this repository
+```
+git clone https://github.com/yourusername/rke2-ha-stack.git
+cd rke2-ha-stack
+```
+### Install Ansible Collections
 
 ```
 ansible-galaxy collection install -r ./collections/requirements.yml
