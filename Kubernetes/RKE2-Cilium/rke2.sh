@@ -1,44 +1,26 @@
 #!/bin/bash
 
-echo -e " \033[33;5m    __  _          _        ___                            \033[0m"
-echo -e " \033[33;5m    \ \(_)_ __ ___( )__    / _ \__ _ _ __ __ _  __ _  ___  \033[0m"
-echo -e " \033[33;5m     \ \ | '_ \` _ \/ __|  / /_\/ _\` | '__/ _\` |/ _\` |/ _ \ \033[0m"
-echo -e " \033[33;5m  /\_/ / | | | | | \__ \ / /_\\  (_| | | | (_| | (_| |  __/ \033[0m"
-echo -e " \033[33;5m  \___/|_|_| |_| |_|___/ \____/\__,_|_|  \__,_|\__, |\___| \033[0m"
-echo -e " \033[33;5m                                               |___/       \033[0m"
-
-echo -e " \033[36;5m                      ___ _  _____ ___                     \033[0m"
-echo -e " \033[36;5m                     | _ \ |/ / __|_  )                    \033[0m"
-echo -e " \033[36;5m                     |   / ' <| _| / /                     \033[0m"
-echo -e " \033[36;5m                     |_|_\_|\_\___/___|                    \033[0m"
-echo -e " \033[36;5m                                                           \033[0m"
-echo -e " \033[32;5m             https://youtube.com/@jims-garage              \033[0m"
-echo -e " \033[32;5m                                                           \033[0m"
-
-
 #############################################
 # YOU SHOULD ONLY NEED TO EDIT THIS SECTION #
 #############################################
 
 # Version of Kube-VIP to deploy
-KVVERSION="v0.6.3"
+KVVERSION="v0.7.2"
 
 # Set the IP addresses of the admin, masters, and workers nodes
-admin=192.168.3.5
-master1=192.168.3.21
-master2=192.168.3.22
-master3=192.168.3.23
-worker1=192.168.3.24
-worker2=192.168.3.25
+admin=192.168.10.77
+master1=192.168.10.31
+master2=192.168.10.32
+master3=192.168.10.33
 
 # User of remote machines
-user=ubuntu
+user=cto
 
 # Interface used on remotes
 interface=eth0
 
 # Set the virtual IP address (VIP)
-vip=192.168.3.50
+vip=192.168.10.77
 
 # Array of all master nodes
 allmasters=($master1 $master2 $master3)
@@ -47,19 +29,19 @@ allmasters=($master1 $master2 $master3)
 masters=($master2 $master3)
 
 # Array of worker nodes
-workers=($worker1 $worker2)
+# workers=($worker1 $worker2)
 
 # Array of all
-all=($master1 $master2 $master3 $worker1 $worker2)
+all=($master1 $master2 $master3)
 
 # Array of all minus master1
-allnomaster1=($master2 $master3 $worker1 $worker2)
+allnomaster1=($master2 $master3)
 
 #Loadbalancer IP range - this is set to /27 in rke2-cilium-config.yaml
-lbrange=192.168.3.64
+lbrange=192.168.10.70
 
 #ssh certificate name variable
-certName=id_rsa
+certName=id_ed25519.3
 
 #############################################
 #            DO NOT EDIT BELOW              #
@@ -131,7 +113,7 @@ mkdir -p /etc/rancher/rke2
 mv config.yaml /etc/rancher/rke2/config.yaml
 echo 'export KUBECONFIG=/etc/rancher/rke2/rke2.yaml' >> ~/.bashrc ; echo 'export PATH=${PATH}:/var/lib/rancher/rke2/bin' >> ~/.bashrc ; echo 'alias k=kubectl' >> ~/.bashrc ; source ~/.bashrc ;
 
-curl -LJO https://raw.githubusercontent.com/JamesTurland/JimsGarage/main/Kubernetes/RKE2-Cilium/rke2-cilium-config.yaml
+curl -LJO https://raw.githubusercontent.com/imaginestack/collections/main/Kubernetes/RKE2-Cilium/rke2-cilium-config.yaml
 cat rke2-cilium-config.yaml | sed 's/<KUBE_API_SERVER_IP>/'$master1'/g' > rke2-cilium-config-update.yaml
 cp rke2-cilium-config-update.yaml /var/lib/rancher/rke2/server/manifests/rke2-cilium-config.yaml
 
@@ -173,7 +155,7 @@ for newnode in "${masters[@]}"; do
   echo "  - rke2-ingress-nginx" >> /etc/rancher/rke2/config.yaml
   echo "disable-kube-proxy: \"true\"" >> /etc/rancher/rke2/config.yaml
 
-  curl -LJO https://raw.githubusercontent.com/JamesTurland/JimsGarage/main/Kubernetes/RKE2-Cilium/rke2-cilium-config.yaml
+  curl -LJO https://raw.githubusercontent.com/imaginestack/collections/main/Kubernetes/RKE2-Cilium/rke2-cilium-config.yaml
   cat rke2-cilium-config.yaml | sed 's/<KUBE_API_SERVER_IP>/'$master1'/g' | sed 's/<lb-network>/'$lbrange'/g' > rke2-cilium-config-update.yaml
   cp rke2-cilium-config-update.yaml /var/lib/rancher/rke2/server/manifests/rke2-cilium-config.yaml
 
@@ -230,7 +212,7 @@ kubectl get pods --namespace cert-manager
 # Install Rancher
 helm install rancher rancher-latest/rancher \
  --namespace cattle-system \
- --set hostname=rancher.my.org \
+ --set hostname=dash.imaginestack.net \
  --set bootstrapPassword=admin
 kubectl -n cattle-system rollout status deploy/rancher
 kubectl -n cattle-system get deploy rancher
