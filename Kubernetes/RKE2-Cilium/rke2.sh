@@ -41,7 +41,7 @@ allnomaster1=($master2 $master3)
 lbrange=192.168.10.70
 
 #ssh certificate name variable
-certName=id_ed25519.3
+certName=mykey.pem
 
 #############################################
 #            DO NOT EDIT BELOW              #
