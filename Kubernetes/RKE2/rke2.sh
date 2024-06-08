@@ -41,6 +41,12 @@ lbrange=192.168.10.60-192.168.10.70
 # SSH certificate name variable
 certName=id_ed25519.3
 
+# TLS Certificates
+tls_crt="/home/cto/certs/server/server.crt"
+tls_key="/home/cto/certs/server/server.key"
+ca_crt="/home/cto/certs/server/ca.crt"
+
+
 #############################################
 #            DO NOT EDIT BELOW              #
 #############################################
