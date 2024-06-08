@@ -1,20 +1,5 @@
 #!/bin/bash
 
-echo -e " \033[33;5m    __  _          _        ___                            \033[0m"
-echo -e " \033[33;5m    \ \(_)_ __ ___( )__    / _ \__ _ _ __ __ _  __ _  ___  \033[0m"
-echo -e " \033[33;5m     \ \ | '_ \` _ \/ __|  / /_\/ _\` | '__/ _\` |/ _\` |/ _ \ \033[0m"
-echo -e " \033[33;5m  /\_/ / | | | | | \__ \ / /_\\  (_| | | | (_| | (_| |  __/ \033[0m"
-echo -e " \033[33;5m  \___/|_|_| |_| |_|___/ \____/\__,_|_|  \__,_|\__, |\___| \033[0m"
-echo -e " \033[33;5m                                               |___/       \033[0m"
-
-echo -e " \033[36;5m                      ___ _  _____ ___                     \033[0m"
-echo -e " \033[36;5m                     | _ \ |/ / __|_  )                    \033[0m"
-echo -e " \033[36;5m                     |   / ' <| _| / /                     \033[0m"
-echo -e " \033[36;5m                     |_|_\_|\_\___/___|                    \033[0m"
-echo -e " \033[36;5m                                                           \033[0m"
-echo -e " \033[32;5m             https://youtube.com/@jims-garage              \033[0m"
-echo -e " \033[32;5m                                                           \033[0m"
-
 
 #############################################
 # YOU SHOULD ONLY NEED TO EDIT THIS SECTION #
@@ -24,21 +9,19 @@ echo -e " \033[32;5m                                                           \
 KVVERSION="v0.6.3"
 
 # Set the IP addresses of the admin, masters, and workers nodes
-admin=192.168.3.5
-master1=192.168.3.21
-master2=192.168.3.22
-master3=192.168.3.23
-worker1=192.168.3.24
-worker2=192.168.3.25
+admin=192.168.100.22
+master1=192.168.10.31
+master2=192.168.10.32
+master3=192.168.10.33
 
 # User of remote machines
-user=ubuntu
+user=cto
 
 # Interface used on remotes
-interface=eth0
+interface=enp0s31f6
 
 # Set the virtual IP address (VIP)
-vip=192.168.3.50
+vip=192.168.3.77
 
 # Array of all master nodes
 allmasters=($master1 $master2 $master3)
@@ -53,13 +36,13 @@ workers=($worker1 $worker2)
 all=($master1 $master2 $master3 $worker1 $worker2)
 
 # Array of all minus master1
-allnomaster1=($master2 $master3 $worker1 $worker2)
+allnomaster1=($master2 $master3 )
 
 #Loadbalancer IP range
 lbrange=192.168.3.60-192.168.3.80
 
 #ssh certificate name variable
-certName=id_rsa
+certName=id_ed25519.3
 
 #############################################
 #            DO NOT EDIT BELOW              #
@@ -69,7 +52,6 @@ sudo timedatectl set-ntp off
 sudo timedatectl set-ntp on
 
 # Move SSH certs to ~/.ssh and change permissions
-cp /home/$user/{$certName,$certName.pub} /home/$user/.ssh
 chmod 600 /home/$user/.ssh/$certName 
 chmod 644 /home/$user/.ssh/$certName.pub
 
