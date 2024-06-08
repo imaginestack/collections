@@ -36,7 +36,7 @@ all=($master1 $master2 $master3)
 allnomaster1=($master2 $master3 )
 
 # Loadbalancer IP range
-lbrange=192.168.3.60-192.168.3.80
+lbrange=192.168.10.60-192.168.10.70
 
 # SSH certificate name variable
 certName=id_ed25519.3
