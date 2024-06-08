@@ -20,7 +20,7 @@ user=cto
 interface=enp0s31f6
 
 # Set the virtual IP address (VIP)
-vip=192.168.3.77
+vip=192.168.10.77
 
 # Array of all master nodes
 allmasters=($master1 $master2 $master3)
