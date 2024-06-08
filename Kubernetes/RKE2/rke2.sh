@@ -6,7 +6,7 @@
 #############################################
 
 # Version of Kube-VIP to deploy
-KVVERSION="v0.6.3"
+KVVERSION="v0.8.0"
 
 # Set the IP addresses of the admin, masters, and workers nodes
 admin=192.168.100.22
@@ -29,11 +29,8 @@ allmasters=($master1 $master2 $master3)
 # Array of master nodes
 masters=($master2 $master3)
 
-# Array of worker nodes
-workers=($worker1 $worker2)
-
 # Array of all
-all=($master1 $master2 $master3 $worker1 $worker2)
+all=($master1 $master2 $master3)
 
 # Array of all minus master1
 allnomaster1=($master2 $master3 )
@@ -167,26 +164,6 @@ done
 
 kubectl get nodes
 
-# Step 7: Add Workers
-for newnode in "${workers[@]}"; do
-  ssh -tt $user@$newnode -i ~/.ssh/$certName sudo su <<EOF
-  mkdir -p /etc/rancher/rke2
-  touch /etc/rancher/rke2/config.yaml
-  echo "token: $token" >> /etc/rancher/rke2/config.yaml
-  echo "server: https://$vip:9345" >> /etc/rancher/rke2/config.yaml
-  echo "node-label:" >> /etc/rancher/rke2/config.yaml
-  echo "  - worker=true" >> /etc/rancher/rke2/config.yaml
-  echo "  - longhorn=true" >> /etc/rancher/rke2/config.yaml
-  curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
-  systemctl enable rke2-agent.service
-  systemctl start rke2-agent.service
-  exit
-EOF
-  echo -e " \033[32;5mWorker node joined successfully!\033[0m"
-done
-
-kubectl get nodes
-
 # Step 8: Install Metallb
 echo -e " \033[32;5mDeploying Metallb\033[0m"
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
@@ -230,7 +207,7 @@ kubectl get pods --namespace cert-manager
 echo -e " \033[32;5mDeploying Rancher\033[0m"
 helm install rancher rancher-latest/rancher \
  --namespace cattle-system \
- --set hostname=rancher.my.org \
+ --set hostname=dash.imaginestack.net \
  --set bootstrapPassword=admin
 kubectl -n cattle-system rollout status deploy/rancher
 kubectl -n cattle-system get deploy rancher
