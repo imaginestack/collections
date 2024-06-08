@@ -74,7 +74,7 @@ done
 # create RKE2's self-installing manifest dir
 sudo mkdir -p /var/lib/rancher/rke2/server/manifests
 # Install the kube-vip deployment into rke2's self-installing manifest folder
-curl -sO https://raw.githubusercontent.com/JamesTurland/JimsGarage/main/Kubernetes/RKE2/kube-vip
+curl -sO https://raw.githubusercontent.com/imaginestack/collections/main/Kubernetes/RKE2/kube-vip
 cat kube-vip | sed 's/$interface/'$interface'/g; s/$vip/'$vip'/g' > $HOME/kube-vip.yaml
 sudo mv kube-vip.yaml /var/lib/rancher/rke2/server/manifests/kube-vip.yaml
 
@@ -169,7 +169,7 @@ echo -e " \033[32;5mDeploying Metallb\033[0m"
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
 # Download ipAddressPool and configure using lbrange above
-curl -sO https://raw.githubusercontent.com/JamesTurland/JimsGarage/main/Kubernetes/RKE2/ipAddressPool
+curl -sO https://raw.githubusercontent.com/imaginestack/collections/main/Kubernetes/RKE2/ipAddressPool
 cat ipAddressPool | sed 's/$lbrange/'$lbrange'/g' > $HOME/ipAddressPool.yaml
 
 # Step 9: Deploy IP Pools and l2Advertisement
@@ -179,7 +179,7 @@ kubectl wait --namespace metallb-system \
                 --selector=component=controller \
                 --timeout=1800s
 kubectl apply -f ipAddressPool.yaml
-kubectl apply -f https://raw.githubusercontent.com/JamesTurland/JimsGarage/main/Kubernetes/RKE2/l2Advertisement.yaml
+kubectl apply -f https://raw.githubusercontent.com/imaginestack/collections/main/Kubernetes/RKE2/l2Advertisement.yaml
 
 # Step 10: Install Rancher (Optional - Delete if not required)
 #Install Helm
